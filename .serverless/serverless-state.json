@@ -1,14 +1,17 @@
 {
   "service": {
-    "service": "goservice",
+    "service": "goservice-curd",
     "serviceObject": {
-      "name": "goservice"
+      "name": "goservice-curd"
     },
     "provider": {
       "name": "aws",
       "runtime": "go1.x",
+      "region": "ap-southeast-1",
+      "environment": {
+        "RDS_CONN_STRING": "postgres://uonipwaa:Q5iSESFNhytRHsZjuJ1Lh0A0RS1_j4pi@tiny.db.elephantsql.com/uonipwaa"
+      },
       "stage": "dev",
-      "region": "us-east-1",
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -86,19 +89,25 @@
           "PostLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/goservice-dev-post"
+              "LogGroupName": "/aws/lambda/goservice-curd-dev-post"
             }
           },
-          "Postapi2LogGroup": {
+          "PostupdateLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/goservice-dev-postapi2"
+              "LogGroupName": "/aws/lambda/goservice-curd-dev-postupdate"
+            }
+          },
+          "PostdeleteLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/goservice-curd-dev-postdelete"
             }
           },
           "Postapi3LogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/goservice-dev-postapi3"
+              "LogGroupName": "/aws/lambda/goservice-curd-dev-postapi3"
             }
           },
           "IamRoleLambdaExecution": {
@@ -126,7 +135,7 @@
                     "Fn::Join": [
                       "-",
                       [
-                        "goservice",
+                        "goservice-curd",
                         "dev",
                         "lambda"
                       ]
@@ -144,7 +153,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/goservice-dev*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/goservice-curd-dev*:*"
                           }
                         ]
                       },
@@ -155,7 +164,7 @@
                         ],
                         "Resource": [
                           {
-                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/goservice-dev*:*:*"
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/goservice-curd-dev*:*:*"
                           }
                         ]
                       }
@@ -168,7 +177,7 @@
                 "Fn::Join": [
                   "-",
                   [
-                    "goservice",
+                    "goservice-curd",
                     "dev",
                     {
                       "Ref": "AWS::Region"
@@ -186,13 +195,18 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/goservice/dev/1687666685630-2023-06-25T04:18:05.630Z/post.zip"
+                "S3Key": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z/post.zip"
               },
-              "Handler": "bin/postBin",
+              "Handler": "bin/postInsert",
               "Runtime": "go1.x",
-              "FunctionName": "goservice-dev-post",
+              "FunctionName": "goservice-curd-dev-post",
               "MemorySize": 1024,
               "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "RDS_CONN_STRING": "postgres://uonipwaa:Q5iSESFNhytRHsZjuJ1Lh0A0RS1_j4pi@tiny.db.elephantsql.com/uonipwaa"
+                }
+              },
               "Role": {
                 "Fn::GetAtt": [
                   "IamRoleLambdaExecution",
@@ -204,20 +218,25 @@
               "PostLogGroup"
             ]
           },
-          "Postapi2LambdaFunction": {
+          "PostupdateLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/goservice/dev/1687666685630-2023-06-25T04:18:05.630Z/postapi2.zip"
+                "S3Key": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z/postupdate.zip"
               },
-              "Handler": "bin/postBinApi2",
+              "Handler": "bin/postUpdate",
               "Runtime": "go1.x",
-              "FunctionName": "goservice-dev-postapi2",
+              "FunctionName": "goservice-curd-dev-postupdate",
               "MemorySize": 1024,
               "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "RDS_CONN_STRING": "postgres://uonipwaa:Q5iSESFNhytRHsZjuJ1Lh0A0RS1_j4pi@tiny.db.elephantsql.com/uonipwaa"
+                }
+              },
               "Role": {
                 "Fn::GetAtt": [
                   "IamRoleLambdaExecution",
@@ -226,7 +245,37 @@
               }
             },
             "DependsOn": [
-              "Postapi2LogGroup"
+              "PostupdateLogGroup"
+            ]
+          },
+          "PostdeleteLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z/postdelete.zip"
+              },
+              "Handler": "bin/postDelete",
+              "Runtime": "go1.x",
+              "FunctionName": "goservice-curd-dev-postdelete",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "RDS_CONN_STRING": "postgres://uonipwaa:Q5iSESFNhytRHsZjuJ1Lh0A0RS1_j4pi@tiny.db.elephantsql.com/uonipwaa"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "PostdeleteLogGroup"
             ]
           },
           "Postapi3LambdaFunction": {
@@ -236,13 +285,18 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/goservice/dev/1687666685630-2023-06-25T04:18:05.630Z/postapi3.zip"
+                "S3Key": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z/postapi3.zip"
               },
-              "Handler": "bin/postBinApi3",
+              "Handler": "bin/postGetUsers",
               "Runtime": "go1.x",
-              "FunctionName": "goservice-dev-postapi3",
+              "FunctionName": "goservice-curd-dev-postapi3",
               "MemorySize": 1024,
               "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "RDS_CONN_STRING": "postgres://uonipwaa:Q5iSESFNhytRHsZjuJ1Lh0A0RS1_j4pi@tiny.db.elephantsql.com/uonipwaa"
+                }
+              },
               "Role": {
                 "Fn::GetAtt": [
                   "IamRoleLambdaExecution",
@@ -254,40 +308,50 @@
               "Postapi3LogGroup"
             ]
           },
-          "Postapi3LambdaVersionG2OqmFOlTHTtFUcX9sHsn2E8NWObf7q8uu4dGCUeo": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "Postapi3LambdaFunction"
-              },
-              "CodeSha256": "BSr80nB8rNXhCL8rbQwRz9mjo1kYak/orD0H0yT1+K4="
-            }
-          },
-          "PostLambdaVersionu64KkHV8Xi4QMpWi35dvB5KIpyzb88F1k5l5ZTVvY": {
+          "PostLambdaVersionaQINyuXG0hnqPi0gZ1qua4jvPj6QOVXwiDyhzKI600U": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "PostLambdaFunction"
               },
-              "CodeSha256": "oOA5K85sqzONMO1C5PXDmZtngSLVgcQRVY5tvgJlaAQ="
+              "CodeSha256": "EbEYcaNfF5k1kk4p/qnM5c/w6su1emQKwALscoAPr5U="
             }
           },
-          "Postapi2LambdaVersionTmRKqXI2fXDynCCZf18MqTi8ALoBF56jzatI3UCgk": {
+          "Postapi3LambdaVersionfvU6YnbfvIkHUdJQU6cMQP3ap8OdG9qjubgr3ygI": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "Postapi2LambdaFunction"
+                "Ref": "Postapi3LambdaFunction"
               },
-              "CodeSha256": "ogtyxyS4RLlGUrz/lf7zUJXFCP7PucQF6zkRAPyaP4c="
+              "CodeSha256": "5nh2naJJdqep64F9/PgmFeufsFPdS7UuZUSqZuBObjs="
+            }
+          },
+          "PostdeleteLambdaVersionDIcHMmdzkwgzo3xM4hDLMC9bMTGHRctT6saavWMiXcM": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "PostdeleteLambdaFunction"
+              },
+              "CodeSha256": "LBvhtg24ufFyeTU7PNKD4oD4wFJfN6qjWkm3ayBd5/U="
+            }
+          },
+          "PostupdateLambdaVersion2t5EoMRpWNb6Pay8D0zTbIFPdSFZiZDrqL1Rosxtfg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "PostupdateLambdaFunction"
+              },
+              "CodeSha256": "DPIjwoDX4HouPvl+VBuKyuRvd6yp6DIRPGSgJ6tPbZ4="
             }
           },
           "ApiGatewayRestApi": {
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
-              "Name": "dev-goservice",
+              "Name": "dev-goservice-curd",
               "EndpointConfiguration": {
                 "Types": [
                   "EDGE"
@@ -296,7 +360,7 @@
               "Policy": ""
             }
           },
-          "ApiGatewayResourcePost": {
+          "ApiGatewayResourceInsert": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -305,13 +369,13 @@
                   "RootResourceId"
                 ]
               },
-              "PathPart": "post",
+              "PathPart": "insert",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
             }
           },
-          "ApiGatewayResourcePostapi2": {
+          "ApiGatewayResourceUpdate": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -320,13 +384,13 @@
                   "RootResourceId"
                 ]
               },
-              "PathPart": "postapi2",
+              "PathPart": "update",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
             }
           },
-          "ApiGatewayResourcePostapi3": {
+          "ApiGatewayResourceDelete": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -335,19 +399,34 @@
                   "RootResourceId"
                 ]
               },
-              "PathPart": "postapi3",
+              "PathPart": "delete",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
             }
           },
-          "ApiGatewayMethodPostPost": {
+          "ApiGatewayResourceGetusers": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+              "ParentId": {
+                "Fn::GetAtt": [
+                  "ApiGatewayRestApi",
+                  "RootResourceId"
+                ]
+              },
+              "PathPart": "getusers",
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              }
+            }
+          },
+          "ApiGatewayMethodInsertPost": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "POST",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourcePost"
+                "Ref": "ApiGatewayResourceInsert"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -387,13 +466,13 @@
               "PostLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodPostapi2Post": {
+          "ApiGatewayMethodUpdatePost": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "POST",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourcePostapi2"
+                "Ref": "ApiGatewayResourceUpdate"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -418,7 +497,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "Postapi2LambdaFunction",
+                          "PostupdateLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -430,16 +509,62 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "Postapi2LambdaPermissionApiGateway"
+              "PostupdateLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodPostapi3Post": {
+          "ApiGatewayMethodDeletePost": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "POST",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourcePostapi3"
+                "Ref": "ApiGatewayResourceDelete"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": true,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "PostdeleteLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "PostdeleteLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodGetusersPost": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "POST",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceGetusers"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -479,7 +604,7 @@
               "Postapi3LambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1687666683995": {
+          "ApiGatewayDeployment1688024890611": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -488,9 +613,10 @@
               "StageName": "dev"
             },
             "DependsOn": [
-              "ApiGatewayMethodPostPost",
-              "ApiGatewayMethodPostapi2Post",
-              "ApiGatewayMethodPostapi3Post"
+              "ApiGatewayMethodInsertPost",
+              "ApiGatewayMethodUpdatePost",
+              "ApiGatewayMethodDeletePost",
+              "ApiGatewayMethodGetusersPost"
             ]
           },
           "PostLambdaPermissionApiGateway": {
@@ -530,12 +656,49 @@
               }
             }
           },
-          "Postapi2LambdaPermissionApiGateway": {
+          "PostupdateLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "Postapi2LambdaFunction",
+                  "PostupdateLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    "/*/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "PostdeleteLambdaPermissionApiGateway": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "PostdeleteLambdaFunction",
                   "Arn"
                 ]
               },
@@ -611,34 +774,43 @@
               "Ref": "ServerlessDeploymentBucket"
             },
             "Export": {
-              "Name": "sls-goservice-dev-ServerlessDeploymentBucketName"
-            }
-          },
-          "Postapi3LambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "Postapi3LambdaVersionG2OqmFOlTHTtFUcX9sHsn2E8NWObf7q8uu4dGCUeo"
-            },
-            "Export": {
-              "Name": "sls-goservice-dev-Postapi3LambdaFunctionQualifiedArn"
+              "Name": "sls-goservice-curd-dev-ServerlessDeploymentBucketName"
             }
           },
           "PostLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "PostLambdaVersionu64KkHV8Xi4QMpWi35dvB5KIpyzb88F1k5l5ZTVvY"
+              "Ref": "PostLambdaVersionaQINyuXG0hnqPi0gZ1qua4jvPj6QOVXwiDyhzKI600U"
             },
             "Export": {
-              "Name": "sls-goservice-dev-PostLambdaFunctionQualifiedArn"
+              "Name": "sls-goservice-curd-dev-PostLambdaFunctionQualifiedArn"
             }
           },
-          "Postapi2LambdaFunctionQualifiedArn": {
+          "Postapi3LambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "Postapi2LambdaVersionTmRKqXI2fXDynCCZf18MqTi8ALoBF56jzatI3UCgk"
+              "Ref": "Postapi3LambdaVersionfvU6YnbfvIkHUdJQU6cMQP3ap8OdG9qjubgr3ygI"
             },
             "Export": {
-              "Name": "sls-goservice-dev-Postapi2LambdaFunctionQualifiedArn"
+              "Name": "sls-goservice-curd-dev-Postapi3LambdaFunctionQualifiedArn"
+            }
+          },
+          "PostdeleteLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "PostdeleteLambdaVersionDIcHMmdzkwgzo3xM4hDLMC9bMTGHRctT6saavWMiXcM"
+            },
+            "Export": {
+              "Name": "sls-goservice-curd-dev-PostdeleteLambdaFunctionQualifiedArn"
+            }
+          },
+          "PostupdateLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "PostupdateLambdaVersion2t5EoMRpWNb6Pay8D0zTbIFPdSFZiZDrqL1Rosxtfg"
+            },
+            "Export": {
+              "Name": "sls-goservice-curd-dev-PostupdateLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -664,7 +836,7 @@
               ]
             },
             "Export": {
-              "Name": "sls-goservice-dev-ServiceEndpoint"
+              "Name": "sls-goservice-curd-dev-ServiceEndpoint"
             }
           }
         }
@@ -780,85 +952,110 @@
     "pluginsData": {},
     "functions": {
       "post": {
-        "handler": "bin/postBin",
+        "handler": "bin/postInsert",
         "package": {
           "include": [
-            "./bin/postBin"
+            "./bin/postInsert"
           ],
-          "artifact": "/home/thanh/Desktop/examples/aws-golang-http-get-post/.serverless/post.zip"
+          "artifact": "/Users/thanhtt88-/Document - Local/Golang/serverless-aws-golang-boilerplate-2/.serverless/post.zip"
         },
         "events": [
           {
             "http": {
-              "path": "post",
+              "path": "insert",
               "method": "post",
               "private": true,
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "goservice-dev-post",
+        "name": "goservice-curd-dev-post",
         "memory": 1024,
         "timeout": 6,
         "runtime": "go1.x",
         "vpc": {},
-        "versionLogicalId": "PostLambdaVersionu64KkHV8Xi4QMpWi35dvB5KIpyzb88F1k5l5ZTVvY"
+        "versionLogicalId": "PostLambdaVersionaQINyuXG0hnqPi0gZ1qua4jvPj6QOVXwiDyhzKI600U"
       },
-      "postapi2": {
-        "handler": "bin/postBinApi2",
+      "postupdate": {
+        "handler": "bin/postUpdate",
         "package": {
           "include": [
-            "./bin/postBinApi2"
+            "./bin/postUpdate"
           ],
-          "artifact": "/home/thanh/Desktop/examples/aws-golang-http-get-post/.serverless/postapi2.zip"
+          "artifact": "/Users/thanhtt88-/Document - Local/Golang/serverless-aws-golang-boilerplate-2/.serverless/postupdate.zip"
         },
         "events": [
           {
             "http": {
-              "path": "postapi2",
+              "path": "update",
               "method": "post",
               "private": true,
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "goservice-dev-postapi2",
+        "name": "goservice-curd-dev-postupdate",
         "memory": 1024,
         "timeout": 6,
         "runtime": "go1.x",
         "vpc": {},
-        "versionLogicalId": "Postapi2LambdaVersionTmRKqXI2fXDynCCZf18MqTi8ALoBF56jzatI3UCgk"
+        "versionLogicalId": "PostupdateLambdaVersion2t5EoMRpWNb6Pay8D0zTbIFPdSFZiZDrqL1Rosxtfg"
+      },
+      "postdelete": {
+        "handler": "bin/postDelete",
+        "package": {
+          "include": [
+            "./bin/postDelete"
+          ],
+          "artifact": "/Users/thanhtt88-/Document - Local/Golang/serverless-aws-golang-boilerplate-2/.serverless/postdelete.zip"
+        },
+        "events": [
+          {
+            "http": {
+              "path": "delete",
+              "method": "post",
+              "private": true,
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "name": "goservice-curd-dev-postdelete",
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "go1.x",
+        "vpc": {},
+        "versionLogicalId": "PostdeleteLambdaVersionDIcHMmdzkwgzo3xM4hDLMC9bMTGHRctT6saavWMiXcM"
       },
       "postapi3": {
-        "handler": "bin/postBinApi3",
+        "handler": "bin/postGetUsers",
         "package": {
           "include": [
-            "./bin/postBinApi3"
+            "./bin/postGetUsers"
           ],
-          "artifact": "/home/thanh/Desktop/examples/aws-golang-http-get-post/.serverless/postapi3.zip"
+          "artifact": "/Users/thanhtt88-/Document - Local/Golang/serverless-aws-golang-boilerplate-2/.serverless/postapi3.zip"
         },
         "events": [
           {
             "http": {
-              "path": "postapi3",
+              "path": "getusers",
               "method": "post",
               "private": true,
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "goservice-dev-postapi3",
+        "name": "goservice-curd-dev-postapi3",
         "memory": 1024,
         "timeout": 6,
         "runtime": "go1.x",
         "vpc": {},
-        "versionLogicalId": "Postapi3LambdaVersionG2OqmFOlTHTtFUcX9sHsn2E8NWObf7q8uu4dGCUeo"
+        "versionLogicalId": "Postapi3LambdaVersionfvU6YnbfvIkHUdJQU6cMQP3ap8OdG9qjubgr3ygI"
       }
     },
     "configValidationMode": "warn",
     "serviceFilename": "serverless.yml",
     "initialServerlessConfig": {
-      "service": "goservice",
+      "service": "goservice-curd",
       "frameworkVersion": "3",
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
@@ -874,8 +1071,8 @@
         "exclude": [
           "./**"
         ],
-        "artifactsS3KeyDirname": "serverless/goservice/dev/code-artifacts",
-        "artifactDirectoryName": "serverless/goservice/dev/1687666685630-2023-06-25T04:18:05.630Z"
+        "artifactsS3KeyDirname": "serverless/goservice-curd/dev/code-artifacts",
+        "artifactDirectoryName": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -886,7 +1083,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/goservice/dev/1687666685630-2023-06-25T04:18:05.630Z",
+    "artifactDirectoryName": "serverless/goservice-curd/dev/1688024894039-2023-06-29T07:48:14.039Z",
     "artifact": ""
   }
 }

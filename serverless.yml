@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: goservice # NOTE: update this with your service name
+service: goservice-curd # NOTE: update this with your service name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -21,6 +21,9 @@ frameworkVersion: "3"
 provider:
   name: aws
   runtime: go1.x
+  region: ap-southeast-1
+  environment: 
+    RDS_CONN_STRING: postgres://<username>:<password>@<db url>
 
 plugins:
   - serverless-add-api-key
@@ -28,9 +31,9 @@ plugins:
 custom:
   apiKeys:
     dev:
-    - name: baitap1
+    - name: baitap2
       usagePlan:
-        name: "baitap1" 
+        name: "baitap2" 
         description: "Description of first plan"
         quota:
           limit: 100000
@@ -87,35 +90,45 @@ functions:
   #             paths:
   #               name: true 
   post:
-    handler: bin/postBin
+    handler: bin/postInsert
     package:
       include:
-        - ./bin/postBin
+        - ./bin/postInsert
     events:
       - http:
-          path: post
+          path: insert
           method: post
           private: true
-  postapi2:
-    handler: bin/postBinApi2
+  postupdate:
+    handler: bin/postUpdate
     package:
       include:
-        - ./bin/postBinApi2
+        - ./bin/postUpdate
     events:
       - http:
-          path: postapi2
+          path: update
           method: post      
           private: true
-  postapi3:
-    handler: bin/postBinApi3
+  postdelete:
+    handler: bin/postDelete
     package:
       include:
-        - ./bin/postBinApi3
+        - ./bin/postDelete
     events:
       - http:
-          path: postapi3
+          path: delete
           method: post          
           private: true
+  postapi3:
+    handler: bin/postGetUsers
+    package:
+      include:
+        - ./bin/postGetUsers
+    events:
+      - http:
+          path: getusers
+          method: post          
+          private: true        
 
 
 #    The following are a few example events you can configure

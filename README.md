@@ -17,71 +17,120 @@ This example is using AWS Request and Response Proxy Model, provided by AWS itse
 If you want to test any changes don't forget to run `make` inside the service directory.
  
 
+# API Specs
+- Viết 4 api, gọi vào database postgres
+  - craete user
+  - update user
+  - delete user by username
+  - get user list by username
 
-### POST endpoint with name in the body /post 
-- input đầu vào có 2 field: value1, value2
+- Script create table user
+```sql
+CREATE TABLE "users" (
+    "id" bigserial,
+    username character varying(50) COLLATE pg_catalog."default",
+    name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    phone character varying(50) COLLATE pg_catalog."default",
+    PRIMARY KEY ("id")
+);
+```
+
+### API Insert
+- create user với username, name, phone. Phải check username tồn tại duy nhất trong table, không sử dụng unique của database
+- input:
 ```
 {
     "requestId": {{uuid}},
     "requestTime": {{timeRPC3339}},
     "data": {
-        "value1": {{number}},
-        "value2": {{number}}
+        "username": {{string}},
+        "name": {{string}},
+        "phone": {{string}}
     }
 }
 ```
-- output: sẽ trả về giá trị của value1+value2
+- output:
 ```
 {
-    "requestId": {{requestId}},
-    "requestTime": {{timeRPC3339}},
-    "data": {
-        "sum": {{value1+value2}}
-    }
+    "responseId": {{requestId}},
+    "responseTime": {{timeRPC3339}},
+    "responseCode": {{string}},
+    "responseMessage": {{string}}
 }
 ```
-### POST endpoint with name in the body /postapi2 
-- input đầu vào có 2 field: plaintText, secretKey
-```
-{
-    "requestId": {{uuid}},
-    "requestTime": {{timeRPC3339}},
-    "data": {
-        "plaintText": {{string}},
-        "secretKey": {{string}}
-    }
-}
-```
-- output: sẽ trả về 1 field: signature sử dụng thuật toán sha256 hoặc hmacsha256
-```
-{
-    "requestId": {{requestId}},
-    "requestTime": {{timeRPC3339}},
-    "data": {
-        "signature": {{string}}
-    }
-}
-```
-### POST endpoint with name in the body /postapi3 
-- là dùng base64, input có 2 filed: needEncode, needDecode
+
+### API Update
+- update user by username. Thông tin update là name và phone.
+- input:
 ```
 {
     "requestId": {{uuid}},
     "requestTime": {{timeRPC3339}},
     "data": {
-        "needEncode": {{string}},
-        "needDecode": {{string}}
+        "username": {{string}},
+        "name": {{string}},
+        "phone": {{string}}
     }
 }
 ```
-- output: sẽ trả về 2 field: outEncode là output của base64 field needEncode, outDecode là output của field needDecode
+
+- output:
 ```
 {
-    "requestId": {{requestId}},
+    "responseId": {{requestId}},
+    "responseTime": {{timeRPC3339}},
+    "responseCode": {{string}},
+    "responseMessage": {{string}},
+}
+```
+
+### API Delete
+- delete user by username
+- input:
+```
+{
+    "requestId": {{uuid}},
     "requestTime": {{timeRPC3339}},
     "data": {
-        "outEncode": {{string}},
-        "outDecode": {{string}}
+        "username": {{string}}
+    }
+}
+```
+
+- output:
+```
+{
+    "responseId": {{requestId}},
+    "responseTime": {{timeRPC3339}},
+    "responseCode": {{string}},
+    "responseMessage": {{string}},
+}
+```
+
+### API Get list
+- get list by username
+- input:
+```
+{
+    "requestId": {{uuid}},
+    "requestTime": {{timeRPC3339}},
+    "data": {
+        "username": {{string}}
+    }
+}
+```
+
+- output:
+```
+{
+    "responseId": {{uuid}},
+    "responseTime": {{timeRPC3339}},
+    "responseCode": {{string}},
+    "responseMessage": {{string}},
+    "data": {
+        "username": {{string}},
+        "name": {{string}},
+        "phone": {{string}}
     }
 }
 ```
